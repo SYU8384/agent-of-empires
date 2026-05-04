@@ -1,5 +1,5 @@
 # aoe-sandbox: Docker image for Agent of Empires sandbox sessions
-# This image provides Claude Code, OpenCode, Mistral Vibe, Hermes, Codex CLI, Gemini CLI, Cursor CLI, Copilot CLI, Pi, Kiro CLI, and Qwen Code in an isolated environment
+# This image provides Claude Code, OpenCode, Mistral Vibe, Hermes, Codex CLI, Kimi CLI, Gemini CLI, Cursor CLI, Copilot CLI, Pi, Kiro CLI, and Qwen Code in an isolated environment
 
 FROM ubuntu:24.04
 
@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     jq \
     openssh-client \
+    pipx \
     ripgrep \
     fzf \
     unzip \
@@ -43,6 +44,13 @@ RUN curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/
 # Install Codex CLI (OpenAI)
 RUN npm install -g @openai/codex
 
+# Install Kimi Code CLI
+RUN if command -v uv >/dev/null 2>&1; then \
+        uv tool install kimi-cli; \
+    else \
+        pipx install kimi-cli; \
+    fi
+
 # Install Gemini CLI (Google)
 RUN npm install -g @google/gemini-cli
 
@@ -72,6 +80,7 @@ RUN mkdir -p /root/.claude \
     /root/.hermes \
     /root/.vibe \
     /root/.codex \
+    /root/.kimi \
     /root/.gemini \
     /root/.cursor \
     /root/.copilot \

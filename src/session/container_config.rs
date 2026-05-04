@@ -133,6 +133,18 @@ const AGENT_CONFIG_MOUNTS: &[AgentConfigMount] = &[
         clean_files: &[],
     },
     AgentConfigMount {
+        tool_name: "kimi",
+        host_rel: ".kimi",
+        container_suffix: ".kimi",
+        skip_entries: &["sandbox"],
+        seed_files: &[],
+        copy_dirs: &[],
+        keychain_credential: None,
+        home_seed_files: &[],
+        preserve_files: &[],
+        clean_files: &[],
+    },
+    AgentConfigMount {
         tool_name: "gemini",
         host_rel: ".gemini",
         container_suffix: ".gemini",
@@ -1794,6 +1806,13 @@ mod tests {
             .collect();
         assert_eq!(hermes_mounts.len(), 1);
         assert_eq!(hermes_mounts[0].host_rel, ".hermes");
+
+        let kimi_mounts: Vec<_> = AGENT_CONFIG_MOUNTS
+            .iter()
+            .filter(|m| m.tool_name == "kimi")
+            .collect();
+        assert_eq!(kimi_mounts.len(), 1);
+        assert_eq!(kimi_mounts[0].host_rel, ".kimi");
 
         // Unknown tool should match nothing
         let unknown_mounts: Vec<_> = AGENT_CONFIG_MOUNTS

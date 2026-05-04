@@ -241,6 +241,22 @@ pub const AGENTS: &[AgentDef] = &[
         install_hint: "npm install -g @openai/codex",
     },
     AgentDef {
+        name: "kimi",
+        binary: "kimi",
+        aliases: &["kimi-cli"],
+        detection: DetectionMethod::Which("kimi"),
+        yolo: Some(YoloMode::CliFlag("--yolo")),
+        instruction_flag: None,
+        set_default_command: false,
+        detect_status: status_detection::detect_kimi_status,
+        container_env: &[],
+        hook_config: None,
+        resume_strategy: ResumeStrategy::Flag("--session"),
+        host_only: false,
+        send_keys_enter_delay_ms: 0,
+        install_hint: "uv tool install kimi-cli",
+    },
+    AgentDef {
         name: "gemini",
         binary: "gemini",
         aliases: &[],
@@ -509,6 +525,7 @@ mod tests {
         assert_eq!(get_agent("opencode").unwrap().binary, "opencode");
         assert_eq!(get_agent("vibe").unwrap().binary, "vibe");
         assert_eq!(get_agent("codex").unwrap().binary, "codex");
+        assert_eq!(get_agent("kimi").unwrap().binary, "kimi");
         assert_eq!(get_agent("gemini").unwrap().binary, "gemini");
         assert_eq!(get_agent("cursor").unwrap().binary, "agent");
         assert_eq!(get_agent("copilot").unwrap().binary, "copilot");
@@ -548,7 +565,7 @@ mod tests {
         assert_eq!(
             names,
             vec![
-                "claude", "opencode", "vibe", "codex", "gemini", "cursor", "copilot", "pi",
+                "claude", "opencode", "vibe", "codex", "kimi", "gemini", "cursor", "copilot", "pi",
                 "droid", "settl", "hermes", "kiro", "qwen"
             ]
         );
@@ -560,6 +577,8 @@ mod tests {
         assert_eq!(resolve_tool_name("open-code"), Some("opencode"));
         assert_eq!(resolve_tool_name("mistral-vibe"), Some("vibe"));
         assert_eq!(resolve_tool_name("codex"), Some("codex"));
+        assert_eq!(resolve_tool_name("kimi"), Some("kimi"));
+        assert_eq!(resolve_tool_name("kimi-cli"), Some("kimi"));
         assert_eq!(resolve_tool_name("gemini"), Some("gemini"));
         assert_eq!(resolve_tool_name("cursor"), Some("cursor"));
         assert_eq!(resolve_tool_name("github-copilot"), Some("copilot"));
@@ -583,27 +602,29 @@ mod tests {
     fn test_settings_index_roundtrip() {
         assert_eq!(settings_index_from_name(None), 0);
         assert_eq!(settings_index_from_name(Some("claude")), 1);
-        assert_eq!(settings_index_from_name(Some("gemini")), 5);
-        assert_eq!(settings_index_from_name(Some("cursor")), 6);
-        assert_eq!(settings_index_from_name(Some("copilot")), 7);
-        assert_eq!(settings_index_from_name(Some("pi")), 8);
-        assert_eq!(settings_index_from_name(Some("droid")), 9);
-        assert_eq!(settings_index_from_name(Some("settl")), 10);
-        assert_eq!(settings_index_from_name(Some("hermes")), 11);
-        assert_eq!(settings_index_from_name(Some("kiro")), 12);
-        assert_eq!(settings_index_from_name(Some("qwen")), 13);
+        assert_eq!(settings_index_from_name(Some("kimi")), 5);
+        assert_eq!(settings_index_from_name(Some("gemini")), 6);
+        assert_eq!(settings_index_from_name(Some("cursor")), 7);
+        assert_eq!(settings_index_from_name(Some("copilot")), 8);
+        assert_eq!(settings_index_from_name(Some("pi")), 9);
+        assert_eq!(settings_index_from_name(Some("droid")), 10);
+        assert_eq!(settings_index_from_name(Some("settl")), 11);
+        assert_eq!(settings_index_from_name(Some("hermes")), 12);
+        assert_eq!(settings_index_from_name(Some("kiro")), 13);
+        assert_eq!(settings_index_from_name(Some("qwen")), 14);
 
         assert_eq!(name_from_settings_index(0), None);
         assert_eq!(name_from_settings_index(1), Some("claude"));
-        assert_eq!(name_from_settings_index(5), Some("gemini"));
-        assert_eq!(name_from_settings_index(6), Some("cursor"));
-        assert_eq!(name_from_settings_index(7), Some("copilot"));
-        assert_eq!(name_from_settings_index(8), Some("pi"));
-        assert_eq!(name_from_settings_index(9), Some("droid"));
-        assert_eq!(name_from_settings_index(10), Some("settl"));
-        assert_eq!(name_from_settings_index(11), Some("hermes"));
-        assert_eq!(name_from_settings_index(12), Some("kiro"));
-        assert_eq!(name_from_settings_index(13), Some("qwen"));
+        assert_eq!(name_from_settings_index(5), Some("kimi"));
+        assert_eq!(name_from_settings_index(6), Some("gemini"));
+        assert_eq!(name_from_settings_index(7), Some("cursor"));
+        assert_eq!(name_from_settings_index(8), Some("copilot"));
+        assert_eq!(name_from_settings_index(9), Some("pi"));
+        assert_eq!(name_from_settings_index(10), Some("droid"));
+        assert_eq!(name_from_settings_index(11), Some("settl"));
+        assert_eq!(name_from_settings_index(12), Some("hermes"));
+        assert_eq!(name_from_settings_index(13), Some("kiro"));
+        assert_eq!(name_from_settings_index(14), Some("qwen"));
         assert_eq!(name_from_settings_index(99), None);
     }
 
@@ -625,6 +646,7 @@ mod tests {
         // Other agents should not delay
         assert_eq!(send_keys_enter_delay("claude"), 0);
         assert_eq!(send_keys_enter_delay("opencode"), 0);
+        assert_eq!(send_keys_enter_delay("kimi"), 0);
         assert_eq!(send_keys_enter_delay("hermes"), 0);
         assert_eq!(send_keys_enter_delay("kiro"), 0);
         assert_eq!(send_keys_enter_delay("unknown_agent"), 0);
@@ -648,6 +670,7 @@ mod tests {
             Some("npm install -g @anthropic-ai/claude-code")
         );
         assert_eq!(install_hint("codex"), Some("npm install -g @openai/codex"));
+        assert_eq!(install_hint("kimi"), Some("uv tool install kimi-cli"));
         // Pi is distributed via npm, not pip (issue #818).
         assert_eq!(
             install_hint("pi"),

@@ -72,7 +72,7 @@ agent_status_hooks = true
 
 ### Custom Agents
 
-You can register additional agents (SSH wrappers to remote machines, custom workflows, etc.) that appear in the TUI agent picker alongside built-in agents like `claude`, `opencode`, and `codex`.
+You can register additional agents (SSH wrappers to remote machines, custom workflows, etc.) that appear in the TUI agent picker alongside built-in agents like `claude`, `opencode`, `codex`, and `kimi`.
 
 ```toml
 [session]
@@ -84,6 +84,8 @@ agent_detect_as = { "lenovo-claude" = "claude" }
 - **`agent_detect_as`** (optional): Maps a custom agent to a built-in agent's status detection. Without this, custom agents default to `Idle` status. Setting `"lenovo-claude" = "claude"` reuses Claude's Running/Waiting/Idle detection heuristics for the remote session.
 
 Custom agents are always shown as available in the picker (no binary detection), since the command may target a remote host or a wrapper script.
+
+Use `custom_agents` for tools AoE does not support as built-ins yet.
 
 You can also set `default_tool` to a custom agent name:
 

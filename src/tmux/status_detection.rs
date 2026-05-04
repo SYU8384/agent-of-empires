@@ -226,6 +226,57 @@ pub fn detect_opencode_status(raw_content: &str) -> Status {
     Status::Idle
 }
 
+pub fn detect_kimi_status(raw_content: &str) -> Status {
+    let content = raw_content.to_lowercase();
+    let non_empty_lines: Vec<&str> = content
+        .lines()
+        .filter(|line| !line.trim().is_empty())
+        .collect();
+    let last_lines = non_empty_lines
+        .iter()
+        .rev()
+        .take(20)
+        .rev()
+        .copied()
+        .collect::<Vec<&str>>()
+        .join("\n");
+
+    if last_lines.contains("esc to interrupt")
+        || last_lines.contains("esc interrupt")
+        || last_lines.contains("thinking")
+        || last_lines.contains("working")
+    {
+        return Status::Running;
+    }
+
+    for line in &non_empty_lines {
+        for spinner in SPINNER_CHARS {
+            if line.contains(spinner) {
+                return Status::Running;
+            }
+        }
+    }
+
+    let waiting_markers = [
+        "(y/n)",
+        "[y/n]",
+        "approve",
+        "allow",
+        "continue?",
+        "proceed?",
+        "enter to select",
+        "esc to cancel",
+    ];
+    if waiting_markers
+        .iter()
+        .any(|marker| last_lines.contains(marker))
+    {
+        return Status::Waiting;
+    }
+
+    Status::Idle
+}
+
 pub fn detect_vibe_status(raw_content: &str) -> Status {
     let content = raw_content.to_lowercase();
     let lines: Vec<&str> = content.lines().collect();
